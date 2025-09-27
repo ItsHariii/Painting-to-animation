@@ -1,0 +1,1 @@
+// Status indicator component for showing processing progress

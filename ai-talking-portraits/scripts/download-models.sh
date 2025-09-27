@@ -1,0 +1,1 @@
+# Script to download FOMM and Wav2Lip model checkpoints

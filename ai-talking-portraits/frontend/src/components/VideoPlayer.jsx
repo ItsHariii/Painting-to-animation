@@ -1,0 +1,1 @@
+// Video player component for displaying generated talking portraits

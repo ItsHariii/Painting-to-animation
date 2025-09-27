@@ -1,0 +1,1 @@
+// Camera capture component for taking photos directly in browser
