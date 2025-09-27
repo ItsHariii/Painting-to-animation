@@ -46,12 +46,12 @@ class ApiClient {
   }
   
   // Animation endpoints
-  async createAnimation(imageFile, context, motionStyle = 'gentle', duration = 20) {
+  async createAnimation(imageFile, context, motionId = 'wave_5s', targetSecs = 5) {
     const formData = new FormData()
     formData.append('image', imageFile)
     formData.append('context', context)
-    formData.append('motion_style', motionStyle)
-    formData.append('duration', duration.toString())
+    formData.append('motion_id', motionId)
+    formData.append('target_secs', targetSecs.toString())
     
     return this.request('/animate', {
       method: 'POST',
@@ -81,15 +81,13 @@ class ApiClient {
 // Create and export a singleton instance
 export const apiClient = new ApiClient()
 
-// Export individual methods for convenience
-export const {
-  healthCheck,
-  createAnimation,
-  getJobStatus,
-  getMotionStyles,
-  getGallery,
-  getPortrait,
-} = apiClient
+// Export individual methods for convenience (bound to maintain context)
+export const healthCheck = (...args) => apiClient.healthCheck(...args)
+export const createAnimation = (...args) => apiClient.createAnimation(...args)
+export const getJobStatus = (...args) => apiClient.getJobStatus(...args)
+export const getMotionStyles = (...args) => apiClient.getMotionStyles(...args)
+export const getGallery = (...args) => apiClient.getGallery(...args)
+export const getPortrait = (...args) => apiClient.getPortrait(...args)
 
 // Utility functions
 export const validateImageFile = (file) => {

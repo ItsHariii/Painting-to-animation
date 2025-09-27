@@ -24,7 +24,7 @@
   - Add CORS middleware for frontend integration
   - _Requirements: 1.1, 1.3, 7.1, 7.4_
 
-- [ ] 4. Integrate OpenAI script generation and TTS
+- [x] 4. Integrate OpenAI script generation and TTS
   - Set up OpenAI client configuration with API key handling
   - Implement script generation function using OpenAI API
   - Create TTS conversion function with WAV output format

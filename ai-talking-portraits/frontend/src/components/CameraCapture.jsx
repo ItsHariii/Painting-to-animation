@@ -6,6 +6,7 @@ const CameraCapture = ({ onVideoGenerated, onError }) => {
   const [context, setContext] = useState('')
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState(null)
+  const [result, setResult] = useState(null)
 
 
 
@@ -37,12 +38,13 @@ const CameraCapture = ({ onVideoGenerated, onError }) => {
     setCapturedImage(null)
     setContext('')
     setError(null)
+    setResult(null)
   }
 
   // Upload image and generate animation
   const handleUpload = async () => {
-    if (!capturedImage || !context.trim()) {
-      setError('Please capture an image and provide context.')
+    if (!capturedImage) {
+      setError('Please capture an image first.')
       return
     }
 
@@ -50,18 +52,25 @@ const CameraCapture = ({ onVideoGenerated, onError }) => {
     setError(null)
 
     try {
-      const result = await createAnimation(
+      const response = await createAnimation(
         capturedImage.file,
-        context.trim(),
+        context.trim() || '', // Allow empty context
         'wave_5s', // Default motion style
         5 // Default duration
       )
 
-      if (result.status === 'done') {
-        onVideoGenerated?.(result)
-      } else if (result.status === 'error') {
-        setError(result.error || 'Failed to generate animation')
-        onError?.(result.error)
+      console.log('Animation response:', response)
+      setResult(response)
+
+      if (response.status === 'script_and_audio_ready') {
+        // Script and audio generation completed successfully
+        onVideoGenerated?.(response)
+      } else if (response.status === 'error') {
+        setError(response.error || 'Failed to generate animation')
+        onError?.(response.error)
+      } else {
+        // Other statuses like 'processing'
+        onVideoGenerated?.(response)
       }
     } catch (err) {
       console.error('Upload error:', err)
@@ -166,25 +175,25 @@ const CameraCapture = ({ onVideoGenerated, onError }) => {
         <div className="space-y-4">
           <div>
             <label htmlFor="context" className="block text-sm font-medium text-gray-700 mb-2">
-              Context (Optional)
+              Context (Optional - AI will create a generic script if empty)
             </label>
             <textarea
               id="context"
               value={context}
               onChange={(e) => setContext(e.target.value)}
-              placeholder="Describe who this person is, their time period, or what they should talk about..."
+              placeholder="Optional: Describe who this person is, their time period, or what they should talk about. Leave empty for AI to generate a generic historical portrait script."
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
               rows={3}
               maxLength={500}
             />
             <p className="text-xs text-gray-500 mt-1">
-              {context.length}/500 characters
+              {context.length}/500 characters • Leave empty for generic script
             </p>
           </div>
 
           <button
             onClick={handleUpload}
-            disabled={isUploading || !context.trim()}
+            disabled={isUploading}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-3 px-4 rounded-lg font-medium transition-colors"
           >
             {isUploading ? (
@@ -202,6 +211,82 @@ const CameraCapture = ({ onVideoGenerated, onError }) => {
         </div>
       )}
 
+      {/* Results Display */}
+      {result && (
+        <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+          <h3 className="text-lg font-semibold text-green-800 mb-3">
+            ✅ Generation Complete!
+          </h3>
+          
+          {result.script && (
+            <div className="mb-4">
+              <h4 className="font-medium text-gray-700 mb-2">Generated Script:</h4>
+              <div className="bg-white p-3 rounded border text-gray-800 text-sm">
+                "{result.script}"
+              </div>
+            </div>
+          )}
+
+          {result.processing?.audio_generated && result.job_id && (
+            <div className="mb-4">
+              <h4 className="font-medium text-gray-700 mb-2">🔊 Generated Speech:</h4>
+              <div className="bg-white p-3 rounded border">
+                <audio 
+                  controls 
+                  className="w-full"
+                  preload="metadata"
+                >
+                  <source 
+                    src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/audio/${result.job_id}`} 
+                    type="audio/wav" 
+                  />
+                  Your browser does not support the audio element.
+                </audio>
+                <p className="text-xs text-gray-500 mt-2">
+                  🎧 Tap play to hear the generated speech
+                </p>
+              </div>
+            </div>
+          )}
+          
+          {result.processing && (
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="font-medium">Script Generated:</span>
+                <span className={`ml-2 ${result.processing.script_generated ? 'text-green-600' : 'text-red-600'}`}>
+                  {result.processing.script_generated ? '✓' : '✗'}
+                </span>
+              </div>
+              <div>
+                <span className="font-medium">Audio Generated:</span>
+                <span className={`ml-2 ${result.processing.audio_generated ? 'text-green-600' : 'text-red-600'}`}>
+                  {result.processing.audio_generated ? '✓' : '✗'}
+                </span>
+              </div>
+              <div>
+                <span className="font-medium">Script Length:</span>
+                <span className="ml-2 text-gray-600">{result.processing.script_length} chars</span>
+              </div>
+              <div>
+                <span className="font-medium">Estimated Duration:</span>
+                <span className="ml-2 text-gray-600">{result.processing.estimated_duration}</span>
+              </div>
+            </div>
+          )}
+          
+          <div className="mt-4 text-xs text-gray-600">
+            <p><strong>Job ID:</strong> {result.job_id}</p>
+            <p><strong>Status:</strong> {result.status}</p>
+          </div>
+          
+          <button
+            onClick={resetCapture}
+            className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          >
+            🔄 Create Another Portrait
+          </button>
+        </div>
+      )}
 
     </div>
   )

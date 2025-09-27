@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Client Test</title>
+</head>
+<body>
+    <h1>API Client Test</h1>
+    <button onclick="testHealthCheck()">Test Health Check</button>
+    <div id="result"></div>
+
+    <script type="module">
+        import { healthCheck } from './src/lib/api.js';
+        
+        window.testHealthCheck = async function() {
+            const resultDiv = document.getElementById('result');
+            try {
+                resultDiv.innerHTML = 'Testing...';
+                const result = await healthCheck();
+                resultDiv.innerHTML = `<pre>${JSON.stringify(result, null, 2)}</pre>`;
+            } catch (error) {
+                resultDiv.innerHTML = `<div style="color: red;">Error: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
