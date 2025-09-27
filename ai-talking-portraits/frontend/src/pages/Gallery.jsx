@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import { Play, Clock, User } from 'lucide-react'
-import { motion } from 'framer-motion'
 
 export function Gallery() {
   const [portraits, setPortraits] = useState([])
@@ -81,11 +79,7 @@ export function Gallery() {
   return (
     <div className="min-h-screen py-12 bg-museum-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
+        <div className="animate-fade-in">
           <div className="text-center mb-12">
             <h1 className="text-4xl font-serif font-bold text-museum-900 mb-4">
               Portrait Gallery
@@ -98,7 +92,11 @@ export function Gallery() {
           
           {portraits.length === 0 ? (
             <div className="text-center py-12">
-              <User className="w-16 h-16 text-museum-400 mx-auto mb-4" />
+              <div className="w-16 h-16 bg-gradient-to-br from-museum-100 to-warm-100 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                <svg className="w-8 h-8 text-museum-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
               <h3 className="text-xl font-serif font-semibold text-museum-700 mb-2">
                 No Portraits Yet
               </h3>
@@ -106,7 +104,7 @@ export function Gallery() {
                 Be the first to create an animated portrait for our gallery.
               </p>
               <a
-                href="/capture"
+                href="/create"
                 className="btn-primary"
               >
                 Create Your First Portrait
@@ -115,12 +113,10 @@ export function Gallery() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {portraits.map((portrait, index) => (
-                <motion.div
+                <div
                   key={portrait.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  className="card group cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                  className="card group cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 animate-fade-in"
+                  style={{ animationDelay: `${index * 100}ms` }}
                 >
                   {/* Thumbnail */}
                   <div className="relative mb-4 overflow-hidden rounded-lg">
@@ -134,14 +130,18 @@ export function Gallery() {
                     <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
                       <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                         <div className="w-16 h-16 bg-white bg-opacity-90 rounded-full flex items-center justify-center">
-                          <Play className="w-8 h-8 text-museum-900 ml-1" />
+                          <svg className="w-8 h-8 text-museum-900 ml-1" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z"/>
+                          </svg>
                         </div>
                       </div>
                     </div>
                     
                     {/* Duration Badge */}
                     <div className="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
-                      <Clock className="w-3 h-3 inline mr-1" />
+                      <svg className="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
                       {portrait.duration}s
                     </div>
                   </div>
@@ -161,19 +161,15 @@ export function Gallery() {
                       Created {formatDate(portrait.created_at)}
                     </p>
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
           )}
           
           {/* Featured Section */}
           {portraits.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="mt-16"
-            >
+            <div className="mt-16 animate-slide-up">
+            
               <div className="card bg-museum-900 text-white">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
                   <div>
@@ -187,7 +183,9 @@ export function Gallery() {
                       {portraits[0]?.description}
                     </p>
                     <button className="btn-primary">
-                      <Play className="w-4 h-4 mr-2" />
+                      <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                      </svg>
                       Watch Now
                     </button>
                   </div>
@@ -202,9 +200,9 @@ export function Gallery() {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
           )}
-        </motion.div>
+        </div>
       </div>
     </div>
   )
