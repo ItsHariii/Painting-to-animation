@@ -3,17 +3,23 @@ import { PortraitCapture } from './pages/PortraitCapture'
 import { Gallery } from './pages/Gallery'
 import { Footer } from './components/Footer'
 import { initScrollAnimations } from './utils/scrollAnimations'
+import { initMobileBackground } from './utils/mobileBackground'
 import { useEffect, useState } from 'react'
+
 import './App.css'
 
 function App() {
   const [logoClicked, setLogoClicked] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     // Initialize scroll animations after component mounts
     const timer = setTimeout(() => {
       initScrollAnimations();
     }, 100);
+    
+    // Initialize mobile background handler
+    initMobileBackground();
     
     return () => clearTimeout(timer);
   }, []);
@@ -33,9 +39,18 @@ function App() {
     }, 300);
   };
 
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+  };
+
   return (
     <Router>
       <div className="min-h-screen static-background">
+
         <header className="sticky top-0 z-50 rounded-b-3xl" style={{
           background: 'linear-gradient(135deg, rgba(55, 24, 4, 0.95) 0%, rgba(42, 28, 27, 0.9) 100%)',
           backdropFilter: 'blur(25px)',
@@ -46,16 +61,16 @@ function App() {
           {/* Subtle top accent line */}
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary-400/50 to-transparent"></div>
 
-          <div className="max-w-7xl mx-auto px-6 lg:px-8">
-            <div className="flex justify-between items-center py-5">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center py-4 lg:py-5">
               {/* Enhanced Animated Logo Section */}
-              <Link to="/" className="flex items-center space-x-5 group relative" onClick={handleLogoClick}>
+              <Link to="/" className="flex items-center space-x-3 lg:space-x-5 group relative" onClick={handleLogoClick}>
                 <div className="relative logo-sparkle logo-container">
                   {/* Magical trail effect */}
                   <div className="logo-magical-trail opacity-0 group-hover:opacity-100"></div>
                   
                   {/* Animated background container */}
-                  <div className={`w-16 h-16 flex items-center justify-center relative overflow-visible rounded-xl bg-gradient-to-br from-primary-600/20 to-primary-800/20 border border-primary-400/30 group-hover:border-primary-400/60 transition-all duration-500 logo-magical-float ${logoClicked ? 'logo-coin-flip' : ''}`}>
+                  <div className={`w-12 h-12 lg:w-16 lg:h-16 flex items-center justify-center relative overflow-visible rounded-xl bg-gradient-to-br from-primary-600/20 to-primary-800/20 border border-primary-400/30 group-hover:border-primary-400/60 transition-all duration-500 logo-magical-float ${logoClicked ? 'logo-coin-flip' : ''}`}>
                     {/* Rotating background ring */}
                     <div className="absolute inset-0 rounded-xl border-2 border-primary-300/20 logo-gentle-spin opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     
@@ -63,7 +78,7 @@ function App() {
                     <img
                       src="/src/assets/images/logos/portrait_logo.png"
                       alt="AI Talking Portraits Logo"
-                      className="w-10 h-10 object-contain rounded-lg logo-hover-flip"
+                      className="w-8 h-8 lg:w-10 lg:h-10 object-contain rounded-lg logo-hover-flip"
                       style={{
                         filter: 'drop-shadow(0 2px 8px rgba(226, 149, 42, 0.4))',
                         transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -88,17 +103,17 @@ function App() {
                 </div>
 
                 <div className="flex flex-col">
-                  <span className="text-2xl font-catchy font-bold metallic-gold transition-all duration-300 group-hover:scale-105">
+                  <span className="text-xl lg:text-2xl font-catchy font-bold metallic-gold transition-all duration-300 group-hover:scale-105">
                     Anima
                   </span>
-                  <span className="text-sm font-catchy text-primary-300/80 group-hover:text-primary-200 transition-all duration-300 font-light tracking-wide">
+                  <span className="text-xs lg:text-sm font-catchy text-primary-300/80 group-hover:text-primary-200 transition-all duration-300 font-light tracking-wide hidden sm:block">
                     Bringing History to Life
                   </span>
                 </div>
               </Link>
 
-              {/* Premium Navigation */}
-              <nav className="flex items-center space-x-8">
+              {/* Desktop Navigation */}
+              <nav className="hidden lg:flex items-center space-x-8">
                 <a href="#about" className="relative font-catchy font-medium text-primary-200/90 hover:text-white transition-all duration-300 group px-4 py-2">
                   <span className="relative z-10">About</span>
                   <div className="absolute inset-0 bg-primary-600/20 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 scale-95 group-hover:scale-100"></div>
@@ -129,6 +144,57 @@ function App() {
                   <span className="relative z-10">Create Portrait</span>
                 </Link>
               </nav>
+
+              {/* Mobile Menu Button */}
+              <button
+                onClick={toggleMobileMenu}
+                className="lg:hidden relative p-3 rounded-xl bg-primary-600/20 border border-primary-400/30 hover:border-primary-400/60 transition-all duration-300 group"
+                aria-label="Toggle mobile menu"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-primary-400/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></div>
+                <div className="relative w-6 h-6 flex flex-col justify-center items-center">
+                  <span className={`block w-6 h-0.5 bg-primary-200 transition-all duration-300 ${mobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`}></span>
+                  <span className={`block w-6 h-0.5 bg-primary-200 mt-1.5 transition-all duration-300 ${mobileMenuOpen ? 'opacity-0' : ''}`}></span>
+                  <span className={`block w-6 h-0.5 bg-primary-200 mt-1.5 transition-all duration-300 ${mobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
+                </div>
+              </button>
+            </div>
+
+            {/* Mobile Menu */}
+            <div className={`lg:hidden transition-all duration-300 ease-in-out ${mobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'} overflow-hidden`}>
+              <div className="py-4 space-y-2 border-t border-primary-400/30">
+                <a 
+                  href="#about" 
+                  onClick={closeMobileMenu}
+                  className="block px-4 py-3 text-primary-200/90 hover:text-white hover:bg-primary-600/20 rounded-lg transition-all duration-300 font-catchy font-medium"
+                >
+                  About
+                </a>
+                <Link 
+                  to="/gallery" 
+                  onClick={closeMobileMenu}
+                  className="block px-4 py-3 text-primary-200/90 hover:text-white hover:bg-primary-600/20 rounded-lg transition-all duration-300 font-catchy font-medium"
+                >
+                  Gallery
+                </Link>
+                <a 
+                  href="#demo" 
+                  onClick={closeMobileMenu}
+                  className="block px-4 py-3 text-primary-200/90 hover:text-white hover:bg-primary-600/20 rounded-lg transition-all duration-300 font-catchy font-medium"
+                >
+                  Demo
+                </a>
+                <Link
+                  to="/create"
+                  onClick={closeMobileMenu}
+                  className="block mx-4 mt-4 px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-500 hover:to-primary-600 font-catchy font-semibold text-white rounded-xl transition-all duration-300 text-center shadow-lg"
+                >
+                  <svg className="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  Create Portrait
+                </Link>
+              </div>
             </div>
           </div>
 
@@ -154,20 +220,20 @@ function App() {
 function HomePage() {
   return (
     <div className="relative overflow-hidden">
-      {/* Hero Section - Completely Redesigned */}
-      <section className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 -mt-20 relative">
-        {/* Animated Background Elements */}
+      {/* Hero Section - Mobile Optimized */}
+      <section className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 -mt-16 lg:-mt-20 relative">
+        {/* Animated Background Elements - Responsive */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-primary-400/20 to-warm-400/20 rounded-full blur-3xl animate-gentle-float"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-gradient-to-r from-warm-400/20 to-primary-400/20 rounded-full blur-3xl animate-gentle-float" style={{ animationDelay: '2s' }}></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-r from-primary-600/10 to-warm-600/10 rounded-full blur-2xl animate-pulse-soft"></div>
+          <div className="absolute top-1/4 left-1/4 w-48 h-48 sm:w-72 sm:h-72 lg:w-96 lg:h-96 bg-gradient-to-r from-primary-400/20 to-warm-400/20 rounded-full blur-3xl animate-gentle-float"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-40 h-40 sm:w-60 sm:h-60 lg:w-80 lg:h-80 bg-gradient-to-r from-warm-400/20 to-primary-400/20 rounded-full blur-3xl animate-gentle-float" style={{ animationDelay: '2s' }}></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 sm:w-48 sm:h-48 lg:w-64 lg:h-64 bg-gradient-to-r from-primary-600/10 to-warm-600/10 rounded-full blur-2xl animate-pulse-soft"></div>
         </div>
 
         <div className="max-w-7xl mx-auto text-center relative z-10">
           <div className="relative">
 
-            {/* Main Headline */}
-            <h1 className="text-7xl md:text-9xl font-catchy font-bold mb-8 relative">
+            {/* Main Headline - Mobile Responsive */}
+            <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-catchy font-bold mb-6 lg:mb-8 relative leading-tight">
               <span className="metallic-gold text-shadow-2xl animate-fade-in block">
                 When Art
               </span>
@@ -176,22 +242,22 @@ function HomePage() {
               </span>
             </h1>
 
-            {/* Subtitle */}
-            <div className="text-2xl md:text-4xl text-primary-200 mb-4 max-w-5xl mx-auto font-catchy font-light animate-slide-up" style={{ animationDelay: '0.6s' }}>
+            {/* Subtitle - Mobile Responsive */}
+            <div className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl text-primary-200 mb-6 lg:mb-8 max-w-5xl mx-auto font-catchy font-light animate-slide-up px-4" style={{ animationDelay: '0.6s' }}>
               Bring forgotten voices into the present
             </div>
 
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center animate-slide-up" style={{ animationDelay: '1.2s' }}>
+            {/* CTA Buttons - Mobile Optimized */}
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center animate-slide-up px-4" style={{ animationDelay: '1.2s' }}>
               <Link
                 to="/create"
-                className="group relative inline-flex items-center justify-center px-12 py-6 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-500 hover:to-primary-600 font-catchy font-bold text-2xl rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-1 overflow-hidden"
+                className="group relative inline-flex items-center justify-center w-full sm:w-auto px-8 sm:px-10 lg:px-12 py-4 sm:py-5 lg:py-6 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-500 hover:to-primary-600 font-catchy font-bold text-lg sm:text-xl lg:text-2xl rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-1 overflow-hidden"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-warm-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <span className="relative z-10 metallic-gold">Create Your Portrait</span>
               </Link>
 
-              <button className="group inline-flex items-center justify-center px-8 py-6 bg-transparent border-2 border-primary-400 hover:border-warm-400 text-primary-200 hover:text-warm-200 font-catchy font-semibold text-xl rounded-2xl transition-all duration-500 transform hover:scale-105 hover:bg-primary-600/10">
+              <button className="group inline-flex items-center justify-center w-full sm:w-auto px-6 sm:px-8 py-4 sm:py-5 lg:py-6 bg-transparent border-2 border-primary-400 hover:border-warm-400 text-primary-200 hover:text-warm-200 font-catchy font-semibold text-lg sm:text-xl rounded-2xl transition-all duration-500 transform hover:scale-105 hover:bg-primary-600/10">
                 Watch Demo
               </button>
             </div>
@@ -199,8 +265,8 @@ function HomePage() {
           </div>
         </div>
 
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+        {/* Scroll Indicator - Hidden on small screens */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce hidden sm:block">
           <div className="w-6 h-10 border-2 border-primary-400 rounded-full flex justify-center">
             <div className="w-1 h-3 bg-primary-400 rounded-full mt-2 animate-pulse"></div>
           </div>

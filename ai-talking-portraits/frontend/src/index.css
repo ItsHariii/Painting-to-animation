@@ -137,6 +137,118 @@
     position: relative;
   }
 
+  /* Mobile background - Force static behavior with multiple approaches */
+  @media screen and (max-width: 768px) {
+    /* Remove background from container */
+    .static-background {
+      background: none !important;
+      position: relative !important;
+    }
+  }
+
+  /* Force mobile background on html element - most reliable approach */
+  @media screen and (max-width: 768px), 
+         screen and (max-device-width: 768px),
+         (hover: none) and (pointer: coarse) {
+    html {
+      background-image: url('/src/assets/images/backgrounds/background_mobile.png') !important;
+      background-size: cover !important;
+      background-position: center center !important;
+      background-repeat: no-repeat !important;
+      background-attachment: fixed !important;
+      min-height: 100vh !important;
+    }
+    
+    body {
+      background: transparent !important;
+    }
+    
+    .static-background {
+      background: transparent !important;
+    }
+  }
+
+  /* Fallback for browsers that don't support background-attachment: fixed on mobile */
+  @media screen and (max-width: 768px) {
+    @supports not (background-attachment: fixed) {
+      html::before {
+        content: '' !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        background-image: url('/src/assets/images/backgrounds/background_mobile.png') !important;
+        background-size: cover !important;
+        background-position: center !important;
+        background-repeat: no-repeat !important;
+        z-index: -9999 !important;
+        pointer-events: none !important;
+      }
+    }
+  }
+
+  /* Mobile-specific animation optimizations */
+  @media screen and (max-width: 768px) {
+    .animate-gentle-float {
+      animation-duration: 8s;
+    }
+    
+    .animate-pulse-soft {
+      animation-duration: 6s;
+    }
+    
+    .animate-float {
+      animation-duration: 4s;
+    }
+    
+    /* Reduce motion for better mobile performance */
+    .scroll-fade-up,
+    .scroll-fade-left,
+    .scroll-fade-right,
+    .scroll-scale,
+    .scroll-slide-up {
+      transition-duration: 0.6s;
+    }
+  }
+
+  /* Touch-friendly hover states for mobile */
+  @media (hover: none) and (pointer: coarse) {
+    .group:hover .group-hover\:opacity-100 {
+      opacity: 1;
+    }
+    
+    .group:hover .group-hover\:scale-110 {
+      transform: scale(1.1);
+    }
+    
+    .group:hover .group-hover\:shadow-xl {
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+  }
+
+  /* Reduce animations on low-end devices */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-gentle-float,
+    .animate-pulse-soft,
+    .animate-float,
+    .animate-bounce-slow,
+    .animate-magical-glow,
+    .animate-sparkle-trail {
+      animation: none;
+    }
+    
+    .scroll-fade-up,
+    .scroll-fade-left,
+    .scroll-fade-right,
+    .scroll-scale,
+    .scroll-slide-up {
+      transition: none;
+      opacity: 1;
+      transform: none;
+    }
+  }
+
   .warm-gradient {
     @apply bg-gradient-to-r from-warm-500 to-warm-600;
   }
@@ -239,6 +351,27 @@
 
   .animate-float {
     animation: float 3s ease-in-out infinite;
+  }
+
+  /* Enhanced magical animations for CameraCapture */
+  .animate-magical-glow {
+    animation: magicalGlow 4s ease-in-out infinite;
+  }
+
+  .animate-sparkle-trail {
+    animation: sparkleTrail 2s ease-in-out infinite;
+  }
+
+  .animate-shimmer {
+    animation: shimmer 3s ease-in-out infinite;
+  }
+
+  .animate-wave-pulse {
+    animation: wavePulse 3s ease-in-out infinite;
+  }
+
+  .animate-rotate-slow {
+    animation: rotateSlow 20s linear infinite;
   }
 
   @keyframes floatSlow {
@@ -402,6 +535,78 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
+  /* Mobile-specific utilities */
+  .mobile-safe-area {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  .mobile-safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .mobile-safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Touch-friendly button sizes */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Mobile text scaling */
+  @media (max-width: 480px) {
+    .text-responsive-sm {
+      font-size: 0.875rem;
+    }
+    
+    .text-responsive-base {
+      font-size: 1rem;
+    }
+    
+    .text-responsive-lg {
+      font-size: 1.125rem;
+    }
+    
+    .text-responsive-xl {
+      font-size: 1.25rem;
+    }
+    
+    .text-responsive-2xl {
+      font-size: 1.5rem;
+    }
+  }
+
+  /* Background preloading for better performance */
+  .preload-mobile-bg {
+    position: relative;
+  }
+
+  .preload-mobile-bg::before {
+    content: '';
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    background-image: url('/src/assets/images/backgrounds/background_mobile.png');
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Natural quality background utility class */
+  .mobile-natural-background {
+    image-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    filter: none;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+
+
   /* Enhanced scroll animations */
   .scroll-fade-up {
     opacity: 0;
@@ -456,6 +661,40 @@
   .scroll-slide-up.animate-in {
     opacity: 1;
     transform: translateY(0);
+  }
+
+  /* Additional scroll animations for CameraCapture */
+  .scroll-rotate-in {
+    opacity: 0;
+    transform: rotate(-10deg) scale(0.8);
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .scroll-rotate-in.animate-in {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+
+  .scroll-zoom-in {
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .scroll-zoom-in.animate-in {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .scroll-flip-in {
+    opacity: 0;
+    transform: rotateY(-90deg);
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .scroll-flip-in.animate-in {
+    opacity: 1;
+    transform: rotateY(0deg);
   }
 
   /* Staggered animations */
@@ -640,6 +879,70 @@
     }
     100% { 
       opacity: 0;
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Additional magical keyframes */
+  @keyframes magicalGlow {
+    0%, 100% { 
+      box-shadow: 0 0 20px rgba(226, 149, 42, 0.3), 0 0 40px rgba(226, 149, 42, 0.1);
+      filter: brightness(1);
+    }
+    50% { 
+      box-shadow: 0 0 40px rgba(226, 149, 42, 0.6), 0 0 80px rgba(226, 149, 42, 0.3);
+      filter: brightness(1.1);
+    }
+  }
+
+  @keyframes sparkleTrail {
+    0% { 
+      opacity: 0;
+      transform: scale(0) rotate(0deg);
+    }
+    50% { 
+      opacity: 1;
+      transform: scale(1) rotate(180deg);
+    }
+    100% { 
+      opacity: 0;
+      transform: scale(0) rotate(360deg);
+    }
+  }
+
+  @keyframes shimmer {
+    0% { 
+      background-position: -200% 0;
+    }
+    100% { 
+      background-position: 200% 0;
+    }
+  }
+
+  @keyframes wavePulse {
+    0%, 100% { 
+      transform: scale(1) rotate(0deg);
+      opacity: 0.7;
+    }
+    25% { 
+      transform: scale(1.05) rotate(1deg);
+      opacity: 0.9;
+    }
+    50% { 
+      transform: scale(1.1) rotate(0deg);
+      opacity: 1;
+    }
+    75% { 
+      transform: scale(1.05) rotate(-1deg);
+      opacity: 0.9;
+    }
+  }
+
+  @keyframes rotateSlow {
+    0% { 
+      transform: rotate(0deg);
+    }
+    100% { 
       transform: rotate(360deg);
     }
   }

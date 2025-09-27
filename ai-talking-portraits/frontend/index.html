@@ -7,6 +7,17 @@
     <title>AI Talking Portraits - Bringing History to Life</title>
     <meta name="description" content="Revolutionary AI technology that transforms historical portraits into interactive, speaking experiences for museums and cultural institutions." />
     <meta name="keywords" content="AI, talking portraits, museum technology, historical animation, artificial intelligence, cultural heritage" />
+    
+    <!-- Prevent mobile browsers from compressing images -->
+    <meta http-equiv="Cache-Control" content="no-transform" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    
+    <!-- Preload mobile background for better quality -->
+    <link rel="preload" as="image" href="/src/assets/images/backgrounds/background_mobile.png" media="(max-width: 768px)" />
+    <link rel="preload" as="image" href="/src/assets/images/backgrounds/background.png" media="(min-width: 769px)" />
   </head>
   <body class="scroll-smooth">
     <div id="root"></div>
