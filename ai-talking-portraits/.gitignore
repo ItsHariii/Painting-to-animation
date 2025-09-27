@@ -1,1 +1,120 @@
 # Project gitignore file
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Node.js / Frontend
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+dist/
+build/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+*.log
+logs/
+
+# AI Talking Portraits specific
+# Temporary job directories and uploaded files
+backend/temp/
+backend/uploads/
+backend/jobs/
+backend/output/
+
+# Generated videos and audio files
+*.mp4
+*.avi
+*.mov
+*.wav
+*.mp3
+*.m4a
+
+# Model files and weights (if stored locally)
+*.pth
+*.pt
+*.ckpt
+*.safetensors
+models/checkpoints/
+models/weights/
+
+# AWS credentials (should use environment variables instead)
+.aws/
+aws-credentials.json
+
+# Test files
+test_images/
+test_outputs/
+*.test.jpg
+*.test.png
+
+# Jupyter notebooks checkpoints
+.ipynb_checkpoints/
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
