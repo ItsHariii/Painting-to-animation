@@ -91,8 +91,11 @@ export const getPortrait = (...args) => apiClient.getPortrait(...args)
 
 // Utility functions
 export const validateImageFile = (file) => {
-  const maxSize = 10 * 1024 * 1024 // 10MB
-  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png']
+  const maxSize = 10 * 1024 * 1024 // 10MB for raw files before conversion
+  const supportedTypes = [
+    'image/jpeg', 'image/jpg', 'image/png', 'image/webp',
+    'image/heic', 'image/heif'
+  ]
   
   if (!file) {
     return { valid: false, error: 'No file provided' }
@@ -102,8 +105,13 @@ export const validateImageFile = (file) => {
     return { valid: false, error: 'File size exceeds 10MB limit' }
   }
   
-  if (!allowedTypes.includes(file.type)) {
-    return { valid: false, error: 'File type not supported. Use JPG or PNG.' }
+  // Check file extensions for HEIC files (iOS sometimes doesn't set correct MIME type)
+  const fileName = file.name.toLowerCase()
+  const isHeic = fileName.endsWith('.heic') || fileName.endsWith('.heif')
+  const isSupported = supportedTypes.includes(file.type) || isHeic
+  
+  if (!isSupported) {
+    return { valid: false, error: 'File type not supported. Use JPG, PNG, WebP, or HEIC images.' }
   }
   
   return { valid: true, error: null }

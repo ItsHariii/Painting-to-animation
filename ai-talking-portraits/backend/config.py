@@ -19,27 +19,22 @@ PORT = int(os.getenv("PORT", 8000))
 
 # S3 Bucket Structure Configuration
 S3_PATHS = {
-    "driving": "driving/body/",
-    "jobs": "jobs/",
-    "temp": "temp/"
+    "driving_videos": "driving_videos/",
+    "jobs": "jobs/"
 }
 
-# S3 Job Directory Structure
-JOB_STRUCTURE = {
-    "input": "input/",
-    "script": "script/",
-    "audio": "audio/",
-    "motion": "motion/",
-    "clips": "clips/",
-    "final": "final/"
+# S3 Job File Names (simplified structure)
+JOB_FILES = {
+    "input": "portrait.jpg",
+    "output": "final.mp4"
 }
 
 # Available driving videos in S3
 DRIVING_VIDEOS = {
-    "wave_5s": "driving/body/wave_5s_256.mp4",
-    "idle_5s": "driving/body/idle_5s_256.mp4", 
-    "step_5s": "driving/body/step_5s_256.mp4",
-    "lookaround_5s": "driving/body/lookaround_5s_256.mp4"
+    "wave_5s": "driving_videos/wave_5s_256.mp4",
+    "idle_5s": "driving_videos/idle_5s_256.mp4", 
+    "step_5s": "driving_videos/step_5s_256.mp4",
+    "lookaround_5s": "driving_videos/lookaround_5s_256.mp4"
 }
 
 # Model Paths
@@ -50,7 +45,7 @@ DRIVING_DIR = "backend/driving/body"
 
 # File size limits
 MAX_IMAGE_SIZE = 10 * 1024 * 1024  # 10MB
-SUPPORTED_IMAGE_FORMATS = {"image/jpeg", "image/jpg", "image/png"}
+SUPPORTED_IMAGE_FORMATS = {"image/png"}  # Only PNG after frontend conversion
 
 # Processing timeouts (in seconds)
 TIMEOUTS = {

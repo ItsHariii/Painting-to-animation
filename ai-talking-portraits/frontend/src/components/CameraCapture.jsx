@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { createAnimation, validateImageFile } from '../lib/api'
+import { convertToPng, validateImageForConversion, getFileTypeName } from '../lib/imageConverter'
 import StatusIndicator from './StatusIndicator'
 import useJobStatus from '../hooks/useJobStatus'
 
@@ -11,6 +12,8 @@ const CameraCapture = ({ onVideoGenerated, onError }) => {
   const [result, setResult] = useState(null)
   const [dragActive, setDragActive] = useState(false)
   const [currentJobId, setCurrentJobId] = useState(null)
+  const [isConverting, setIsConverting] = useState(false)
+  const [conversionProgress, setConversionProgress] = useState('')
   
   // Use job status polling hook
   const { 
@@ -54,20 +57,53 @@ const CameraCapture = ({ onVideoGenerated, onError }) => {
   }
 
   // Process uploaded file
-  const processFile = (file) => {
-    const validation = validateImageFile(file)
+  const processFile = async (file) => {
+    const validation = validateImageForConversion(file)
     if (!validation.valid) {
       setError(validation.error)
       return
     }
 
     setError(null)
-    const imageUrl = URL.createObjectURL(file)
-    setCapturedImage({
-      blob: file,
-      url: imageUrl,
-      file: file
-    })
+    setIsConverting(true)
+    
+    try {
+      let processedFile = file
+      
+      if (validation.needsConversion) {
+        const originalType = getFileTypeName(file)
+        setConversionProgress(`Converting ${originalType} to PNG...`)
+        
+        // Convert to PNG
+        processedFile = await convertToPng(file, {
+          maxWidth: 2048,
+          maxHeight: 2048,
+          quality: 0.9
+        })
+        
+        setConversionProgress(`Conversion complete! ${originalType} → PNG`)
+        
+        // Show success message briefly
+        setTimeout(() => {
+          setConversionProgress('')
+        }, 2000)
+      }
+
+      const imageUrl = URL.createObjectURL(processedFile)
+      setCapturedImage({
+        blob: processedFile,
+        url: imageUrl,
+        file: processedFile,
+        originalFile: file,
+        wasConverted: validation.needsConversion
+      })
+      
+    } catch (conversionError) {
+      console.error('Image conversion failed:', conversionError)
+      setError(`Failed to convert image: ${conversionError.message}`)
+    } finally {
+      setIsConverting(false)
+    }
   }
 
   // Reset to capture new image
@@ -185,6 +221,36 @@ const CameraCapture = ({ onVideoGenerated, onError }) => {
           </div>
         )}
 
+        {/* Conversion Status Display */}
+        {(isConverting || conversionProgress) && (
+          <div className="mb-12 animate-slide-up">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-8">
+              <div className="flex items-start space-x-6">
+                <div className="flex-shrink-0">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+                    {isConverting ? (
+                      <svg className="w-6 h-6 text-white animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    ) : (
+                      <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-xl font-catchy font-bold text-blue-800 mb-2">
+                    {isConverting ? 'Converting Image' : 'Conversion Complete'}
+                  </h4>
+                  <p className="text-blue-700 text-lg">{conversionProgress}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Enhanced Image Upload or Preview */}
         <div className="mb-12">
           {!capturedImage ? (
@@ -256,7 +322,7 @@ const CameraCapture = ({ onVideoGenerated, onError }) => {
                   <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-primary-200/50">
                     <div className="text-primary-600 space-y-2">
                       <p className="font-catchy font-semibold text-lg">Supported formats:</p>
-                      <p className="text-lg">JPG, PNG • Maximum size: 10MB</p>
+                      <p className="text-lg">JPG, PNG, HEIC, WebP • Maximum size: 10MB</p>
                       <p className="text-lg">Best results with clear, well-lit portraits</p>
                     </div>
                   </div>
@@ -293,6 +359,14 @@ const CameraCapture = ({ onVideoGenerated, onError }) => {
                   <p className="text-primary-600 font-catchy">
                     {(capturedImage.file.size / 1024 / 1024).toFixed(1)} MB
                   </p>
+                  {capturedImage.wasConverted && (
+                    <div className="flex items-center mt-2">
+                      <svg className="w-4 h-4 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-sm text-green-700 font-medium">Converted to PNG</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

@@ -66,7 +66,7 @@ class StorageService:
             
             # Upload to S3 if configured
             if self.s3_client and self.bucket_name:
-                s3_key = f"uploads/{job_id}/{safe_filename}"
+                s3_key = f"jobs/{job_id}/portrait.jpg"
                 s3_url = await self._upload_to_s3(local_path, s3_key)
                 result["s3_url"] = s3_url
                 result["s3_key"] = s3_key
@@ -104,7 +104,7 @@ class StorageService:
                 }
             
             # Upload to S3
-            s3_key = f"results/{job_id}/final.mp4"
+            s3_key = f"jobs/{job_id}/final.mp4"
             s3_url = await self._upload_to_s3(video_path, s3_key)
             
             # Generate presigned URL for download

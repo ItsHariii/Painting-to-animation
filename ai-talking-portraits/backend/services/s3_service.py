@@ -73,24 +73,24 @@ class S3Service:
             logger.error(f"Failed to download file from S3: {e}")
             return False
 
-    def upload_job_file(self, job_id: str, file_type: str, local_file_path: str, filename: str) -> Optional[str]:
+    def upload_job_file(self, job_id: str, file_type: str, local_file_path: str) -> Optional[str]:
         """
-        Upload a file to the job's directory structure in S3
+        Upload a file to the job's directory in S3
         
         Args:
             job_id: Unique job identifier
-            file_type: Type of file (input, script, audio, motion, clips, final)
+            file_type: Type of file ('input' or 'output')
             local_file_path: Path to local file
-            filename: Name of file in S3
             
         Returns:
             str: S3 key if successful, None otherwise
         """
-        if file_type not in config.JOB_STRUCTURE:
-            logger.error(f"Invalid file type: {file_type}")
+        if file_type not in config.JOB_FILES:
+            logger.error(f"Invalid file type: {file_type}. Must be 'input' or 'output'")
             return None
             
-        s3_key = f"{config.S3_PATHS['jobs']}{job_id}/{config.JOB_STRUCTURE[file_type]}{filename}"
+        filename = config.JOB_FILES[file_type]
+        s3_key = f"{config.S3_PATHS['jobs']}{job_id}/{filename}"
         
         if self.upload_file(local_file_path, s3_key):
             return s3_key
@@ -149,18 +149,18 @@ class S3Service:
             logger.error(f"Failed to generate presigned URL for {s3_key}: {e}")
             return None
 
-    def list_job_files(self, job_id: str) -> Dict[str, list]:
+    def list_job_files(self, job_id: str) -> Dict[str, bool]:
         """
-        List all files in a job's directory structure
+        Check which files exist for a job
         
         Args:
             job_id: Unique job identifier
             
         Returns:
-            dict: Dictionary with file types as keys and lists of filenames as values
+            dict: Dictionary with file types as keys and existence as boolean values
         """
         job_prefix = f"{config.S3_PATHS['jobs']}{job_id}/"
-        files_by_type = {file_type: [] for file_type in config.JOB_STRUCTURE.keys()}
+        files_exist = {file_type: False for file_type in config.JOB_FILES.keys()}
         
         try:
             response = self.s3_client.list_objects_v2(
@@ -169,21 +169,15 @@ class S3Service:
             )
             
             if 'Contents' in response:
-                for obj in response['Contents']:
-                    key = obj['Key']
-                    # Extract file type and filename from key
-                    relative_path = key[len(job_prefix):]
-                    for file_type, type_prefix in config.JOB_STRUCTURE.items():
-                        if relative_path.startswith(type_prefix):
-                            filename = relative_path[len(type_prefix):]
-                            if filename:  # Don't include directory entries
-                                files_by_type[file_type].append(filename)
-                            break
+                existing_files = {obj['Key'].split('/')[-1] for obj in response['Contents']}
+                
+                for file_type, filename in config.JOB_FILES.items():
+                    files_exist[file_type] = filename in existing_files
             
-            return files_by_type
+            return files_exist
         except ClientError as e:
             logger.error(f"Failed to list job files for {job_id}: {e}")
-            return files_by_type
+            return files_exist
 
     def delete_job_files(self, job_id: str) -> bool:
         """
@@ -218,4 +212,55 @@ class S3Service:
             return True
         except ClientError as e:
             logger.error(f"Failed to delete job files for {job_id}: {e}")
+            return False
+
+    def get_job_input_url(self, job_id: str, expiration: int = 3600) -> Optional[str]:
+        """
+        Get presigned URL for job input image (portrait.jpg)
+        
+        Args:
+            job_id: Unique job identifier
+            expiration: URL expiration time in seconds
+            
+        Returns:
+            str: Presigned URL if successful, None otherwise
+        """
+        s3_key = f"{config.S3_PATHS['jobs']}{job_id}/{config.JOB_FILES['input']}"
+        return self.generate_presigned_url(s3_key, expiration)
+
+    def get_job_output_url(self, job_id: str, expiration: int = 3600) -> Optional[str]:
+        """
+        Get presigned URL for job output video (final.mp4)
+        
+        Args:
+            job_id: Unique job identifier
+            expiration: URL expiration time in seconds
+            
+        Returns:
+            str: Presigned URL if successful, None otherwise
+        """
+        s3_key = f"{config.S3_PATHS['jobs']}{job_id}/{config.JOB_FILES['output']}"
+        return self.generate_presigned_url(s3_key, expiration)
+
+    def job_exists(self, job_id: str) -> bool:
+        """
+        Check if a job directory exists in S3
+        
+        Args:
+            job_id: Unique job identifier
+            
+        Returns:
+            bool: True if job exists, False otherwise
+        """
+        job_prefix = f"{config.S3_PATHS['jobs']}{job_id}/"
+        
+        try:
+            response = self.s3_client.list_objects_v2(
+                Bucket=self.bucket_name,
+                Prefix=job_prefix,
+                MaxKeys=1
+            )
+            return 'Contents' in response and len(response['Contents']) > 0
+        except ClientError as e:
+            logger.error(f"Failed to check job existence for {job_id}: {e}")
             return False

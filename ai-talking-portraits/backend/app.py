@@ -124,7 +124,7 @@ async def animate_portrait(
             logger.error(f"Invalid image file: {image.filename}, content_type: {image.content_type}")
             raise HTTPException(
                 status_code=400,
-                detail=f"Invalid image file. Supported formats: JPG, PNG. Max size: {config.MAX_IMAGE_SIZE // (1024*1024)}MB"
+                detail=f"Invalid image file. Only PNG format accepted (frontend should convert all images to PNG). Max size: {config.MAX_IMAGE_SIZE // (1024*1024)}MB"
             )
         
         # Validate motion_id
@@ -164,8 +164,7 @@ async def animate_portrait(
             s3_image_key = s3_service.upload_job_file(
                 job_id=job_id,
                 file_type="input",
-                local_file_path=str(local_image_path),
-                filename="portrait.jpg"
+                local_file_path=str(local_image_path)
             )
             if s3_image_key:
                 logger.info(f"Successfully uploaded image to S3: {s3_image_key}")
@@ -332,13 +331,36 @@ async def get_job_status(job_id: str):
                 detail="Job not found"
             )
         
-        # TODO: Implement actual status checking in subsequent tasks
-        # For now, return a placeholder response
-        return {
-            "status": "processing",
+        # Check what files exist for this job
+        status_info = {
             "job_id": job_id,
-            "message": "Status checking will be implemented in subsequent tasks"
+            "status": "processing"
         }
+        
+        # Check S3 files if available
+        if s3_service:
+            job_files = s3_service.list_job_files(job_id)
+            
+            if job_files.get("input"):
+                status_info["input_image_url"] = s3_service.get_job_input_url(job_id)
+            
+            if job_files.get("output"):
+                status_info["status"] = "completed"
+                status_info["video_url"] = s3_service.get_job_output_url(job_id)
+                status_info["message"] = "Animation completed successfully"
+            else:
+                status_info["message"] = "Animation in progress"
+        else:
+            # Fallback to local file checking
+            video_path = job_dir / "final.mp4"
+            if video_path.exists():
+                status_info["status"] = "completed"
+                status_info["video_url"] = f"/video/{job_id}"
+                status_info["message"] = "Animation completed successfully"
+            else:
+                status_info["message"] = "Animation in progress"
+        
+        return status_info
         
     except HTTPException:
         raise
@@ -351,6 +373,47 @@ async def get_job_status(job_id: str):
                 "error": "Error checking job status",
                 "job_id": job_id
             }
+        )
+
+@app.get("/video/{job_id}")
+async def get_job_video(job_id: str):
+    """
+    Get generated video file for a job
+    
+    - **job_id**: Unique job identifier
+    """
+    try:
+        # First try to get from S3
+        if s3_service:
+            video_url = s3_service.get_job_output_url(job_id, expiration=3600)
+            if video_url:
+                from fastapi.responses import RedirectResponse
+                return RedirectResponse(url=video_url)
+        
+        # Fallback to local file
+        job_dir = Path(tempfile.gettempdir()) / job_id
+        video_path = job_dir / "final.mp4"
+        
+        if not video_path.exists():
+            raise HTTPException(
+                status_code=404,
+                detail="Video file not found for this job"
+            )
+        
+        from fastapi.responses import FileResponse
+        return FileResponse(
+            path=str(video_path),
+            media_type="video/mp4",
+            filename=f"talking_portrait_{job_id}.mp4"
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error serving video for job {job_id}: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="Error retrieving video file"
         )
 
 @app.get("/audio/{job_id}")
